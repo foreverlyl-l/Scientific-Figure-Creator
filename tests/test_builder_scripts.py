@@ -22,6 +22,7 @@ SCRIPT_DIR = (
 )
 DRAFT_GATE = SCRIPT_DIR / "draft_gate.py"
 SEGMENT_ASSETS = SCRIPT_DIR / "segment_assets.py"
+VALIDATE_RECONSTRUCTION = SCRIPT_DIR / "validate_reconstruction_plan.py"
 
 
 def run_script(script: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -218,6 +219,74 @@ class SegmentAssetsTests(unittest.TestCase):
                 (root / "edge-output" / "boundary_report.json").read_text(encoding="utf-8")
             )
             self.assertIn("image edge", report["detections"][0]["failure_reason"])
+
+
+class ReconstructionPlanTests(unittest.TestCase):
+    def test_native_raster_boundary_and_connector_endpoints(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            assets = root / "assets"
+            assets.mkdir()
+            Image.new("RGB", (40, 40), "#245B78").save(assets / "device.png")
+            plan = {
+                "schema_version": 1,
+                "slide_size": {"width": 800, "height": 450},
+                "objects": [
+                    {
+                        "object_id": "node-1",
+                        "semantic_role": "source",
+                        "source_class": "native-simple-shape",
+                        "action": "native-shape",
+                        "position": {"left": 20, "top": 40, "width": 120, "height": 60},
+                    },
+                    {
+                        "object_id": "node-2",
+                        "semantic_role": "target",
+                        "source_class": "external-crop",
+                        "action": "raster-image",
+                        "source_path": "assets/device.png",
+                        "fit": "contain",
+                        "position": {"left": 260, "top": 40, "width": 120, "height": 60},
+                    },
+                    {
+                        "object_id": "edge-1",
+                        "semantic_role": "flow",
+                        "source_class": "native-simple-shape",
+                        "action": "native-connector",
+                        "from_id": "node-1",
+                        "to_id": "node-2",
+                        "position": {"left": 140, "top": 69, "width": 120, "height": 1},
+                    },
+                ],
+                "outputs": {
+                    "pptx": "deliverables/figure.pptx",
+                    "render_png": "render/figure.png",
+                    "layout_json": "render/figure.layout.json",
+                },
+            }
+            (root / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
+            valid = run_script(
+                VALIDATE_RECONSTRUCTION,
+                "--root",
+                str(root),
+                "--plan",
+                "plan.json",
+            )
+            self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
+
+            plan["objects"][0]["action"] = "raster-image"
+            plan["objects"][0]["source_path"] = "assets/device.png"
+            plan["objects"][0]["fit"] = "contain"
+            (root / "invalid.json").write_text(json.dumps(plan), encoding="utf-8")
+            invalid = run_script(
+                VALIDATE_RECONSTRUCTION,
+                "--root",
+                str(root),
+                "--plan",
+                "invalid.json",
+            )
+            self.assertNotEqual(invalid.returncode, 0)
+            self.assertIn("forbidden", invalid.stdout)
 
 
 if __name__ == "__main__":

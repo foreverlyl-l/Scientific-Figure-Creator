@@ -114,3 +114,5 @@ When asked to review progress, return a concise report with these headings:
 For checklist tables and reporting templates, read `references/block-workflow.md` when planning or reviewing a concrete figure reconstruction.
 
 For whole-image draft generation, human approval, freeze records, mandatory automatic boundary detection, Artifact Tool reconstruction, controlled raster enhancement, and source/render panel comparisons, read `references/whole-first-workflow.md`.
+
+Before writing the task-local PowerPoint construction module, read `references/artifact-tool-reconstruction.md`. Validate its reconstruction plan with `scripts/validate_reconstruction_plan.py` before running Artifact Tool.
