@@ -160,7 +160,7 @@ The reconstruction skill performs its own mandatory block and whole-figure revie
 ### Repository layout
 
 ```text
-scientific-figure-builder-reviewer/
+Scientific-Figure-Creator/
 ├── .github/workflows/release.yml
 ├── .agents/plugins/marketplace.json
 ├── plugins/
@@ -346,7 +346,7 @@ Use $scientific-figure-reviewer to audit this completed PPTX against the referen
 ### 仓库结构
 
 ```text
-scientific-figure-builder-reviewer/
+Scientific-Figure-Creator/
 ├── .github/workflows/release.yml
 ├── .agents/plugins/marketplace.json
 ├── plugins/
