@@ -1,9 +1,18 @@
 ---
 name: scientific-figure-builder
-description: Workflow for recreating reference diagrams, paper figures, flowcharts, and block diagrams as editable PowerPoint shapes. Use when Codex needs to convert an image/reference diagram into a PPTX made from native shapes, hierarchically segment composite source materials into finer atomic assets, deduplicate repeated or near-duplicate assets without losing intentional repeated placements, map the original and slide into matching regions, classify icons as simple shape-composable versus complex/unfinished, preserve user edits with Git checkpoints, fill text/shapes/formulas in stages, and review semantic differences instead of tiny visual mismatches.
+description: Build or recreate scientific figures as editable PowerPoint objects from a written brief, rough sketch, generated whole-figure draft, or reference image. Use when Codex needs to generate one visually continuous first draft, review block and whole-figure semantics, obtain explicit human approval before freezing the draft, automatically detect and crop complex assets, reconstruct text/shapes/formulas/connectors with PowerPoint-native objects, enhance selected raster illustrations under shape/style/background locks, deduplicate repeated assets, and validate matching source/rendered regions.
 ---
 
 # Scientific Figure Builder
+
+## Route Selection
+
+- If the task needs a new visual draft, use the whole-first route. Read `references/whole-first-workflow.md` before generating anything.
+- Generate the first draft as one complete image. Never generate independent panel drafts and assemble them as the first draft.
+- Before draft generation or generative asset enhancement, ask the user which available image-generation backend to use. Do not select a provider by default and do not silently switch providers after a failure.
+- Review block semantics and then whole-figure semantics. Obtain an explicit user confirmation in chat before freezing the draft or starting segmentation.
+- If the user supplies an accepted reference image, keep it as the visual source and use the existing reconstruction route below. Use the whole-first reference whenever the task also requests automatic boundary detection, draft freezing, asset enhancement, or source/render panel comparisons.
+- Use `scripts/draft_gate.py` to create and verify the machine-readable freeze record. Never write an approval record before the user confirms.
 
 ## Core Rule
 
@@ -27,6 +36,8 @@ The block-level and whole-figure reviews in this workflow are mandatory and self
 ## Workflow
 
 1. Segment the reference image semantically.
+   - When the whole-first route is active, verify `draft_lock.json` before this step. Stop if confirmation is absent or either locked hash has changed.
+   - Run `scripts/segment_assets.py` for every crop. Human observations may supply labels and rough search windows, but never final crop bounds.
    - Identify top-level regions: panels, subpanels, headers, legends, pipelines, feedback paths, grouped icons, formulas, and cross-panel arrows.
    - Assign stable block IDs such as `panel-1`, `panel-2-top-chart`, `panel-4-moe`, `panel-5-rule-mask`.
    - Record each block's role in the figure, not just its coordinates.
@@ -54,6 +65,7 @@ The block-level and whole-figure reviews in this workflow are mandatory and self
    - `text`: ordinary labels/headings. Confirm font family, weight, size, and italic/math treatment before finalizing.
 
 4. Fill simple-shape and text content with native PPT tools.
+   - Use JavaScript ES modules and `@oai/artifact-tool` for PowerPoint construction. Python may analyze and crop images but must not draw or modify the deck.
    - Only objects that satisfy the exact `simple-shape` whitelist above may be drawn directly with PPT-native operations. If an object has two or more curves, requires non-trivial multi-color tile/block assembly, or falls outside that whitelist, stop and classify it as `complex-icon` instead of filling it.
    - Use PPT-native connectors/arrows for arrows; do not fake arrows from a line plus triangle unless the user explicitly accepts it.
    - Decide whether each connection is straight, elbow, curved, dashed, or feedback-like before drawing.
@@ -74,6 +86,8 @@ The block-level and whole-figure reviews in this workflow are mandatory and self
    - Do not flag harmless differences such as tiny line width changes, slight spacing differences, or non-semantic color variation unless they obscure meaning.
    - Set the block to `accepted` only when the inventory is complete and the rendered visual review passes; otherwise keep `needs-review` or `deferred`.
    - After every block has passed its local review, run one final whole-figure review to check cross-block relationships, global ordering, connectors, legends, inputs/outputs, and overall semantic equivalence.
+   - When enhanced complex assets are used, run `scripts/audit_enhanced_assets.py` before insertion. Reinsert only `pass` assets at their original frames, then render again and repeat local and whole-figure review.
+   - Run `scripts/compare_panels.py` when the task requires matched source/render evidence. Treat `needs-review` comparisons as unresolved.
 
 6. Produce a stage report after the first pass.
    - List blocks as `accepted`, `needs-review`, or `deferred`; do not call a block completed when it contains unapproved approximations or unresolved complex items.
@@ -98,3 +112,5 @@ When asked to review progress, return a concise report with these headings:
 ## Detailed Guide
 
 For checklist tables and reporting templates, read `references/block-workflow.md` when planning or reviewing a concrete figure reconstruction.
+
+For whole-image draft generation, human approval, freeze records, mandatory automatic boundary detection, Artifact Tool reconstruction, controlled raster enhancement, and source/render panel comparisons, read `references/whole-first-workflow.md`.
