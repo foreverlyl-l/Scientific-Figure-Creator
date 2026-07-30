@@ -213,7 +213,18 @@ The comparison script must redetect the corresponding panel bounds, align panel 
 - `comparisons/contact-sheet.png`;
 - `comparison_report.json`.
 
-Inspect every comparison at full size. A contact sheet is for overview only. Resolve `needs-review` panels before reporting completion.
+Run once without review decisions to produce the evidence images. Inspect every comparison at full size; a contact sheet is for overview only. Record Agent decisions in a task-local JSON object:
+
+```json
+{
+  "panel-1": {
+    "status": "approved",
+    "note": "Panel meaning, direction, labels, and layout match the frozen source."
+  }
+}
+```
+
+Rerun with `--review-decisions <relative-json-path>`. The script returns success only when every detected panel has an approved decision and no geometry gate fails. Resolve `needs-review` or `fail` panels before reporting completion.
 
 ## 8. Failure Rules and Deliverables
 

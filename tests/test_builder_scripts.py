@@ -24,6 +24,7 @@ DRAFT_GATE = SCRIPT_DIR / "draft_gate.py"
 SEGMENT_ASSETS = SCRIPT_DIR / "segment_assets.py"
 VALIDATE_RECONSTRUCTION = SCRIPT_DIR / "validate_reconstruction_plan.py"
 AUDIT_ENHANCED = SCRIPT_DIR / "audit_enhanced_assets.py"
+COMPARE_PANELS = SCRIPT_DIR / "compare_panels.py"
 
 
 def run_script(script: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -221,6 +222,42 @@ class SegmentAssetsTests(unittest.TestCase):
             )
             self.assertIn("image edge", report["detections"][0]["failure_reason"])
 
+    def test_auto_detects_three_and_six_panels_on_textured_background(self) -> None:
+        for count in (3, 6):
+            with self.subTest(count=count), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                width = count * 150 + 20
+                image = Image.new("RGB", (width, 160), "#F8F8F6")
+                pixels = image.load()
+                for y in range(image.height):
+                    for x in range(image.width):
+                        delta = (x + y) % 3
+                        pixels[x, y] = (248 + delta, 248 + delta, 246 + delta)
+                draw = ImageDraw.Draw(image)
+                for index in range(count):
+                    left = 20 + index * 150
+                    draw.rectangle(
+                        (left, 30, left + 110, 130),
+                        fill=(35 + index * 8, 90, 120),
+                    )
+                image.save(root / "figure.png")
+                result = run_script(
+                    SEGMENT_ASSETS,
+                    "--root",
+                    str(root),
+                    "--image",
+                    "figure.png",
+                    "--output-dir",
+                    "segmentation",
+                    "--expected-count",
+                    str(count),
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                with (root / "segmentation" / "asset_manifest.csv").open(
+                    encoding="utf-8", newline=""
+                ) as handle:
+                    self.assertEqual(len(list(csv.DictReader(handle))), count)
+
 
 class ReconstructionPlanTests(unittest.TestCase):
     def test_native_raster_boundary_and_connector_endpoints(self) -> None:
@@ -404,6 +441,102 @@ class EnhancedAssetAuditTests(unittest.TestCase):
             self.assertIn("scientific evidence", joined)
             self.assertIn("aspect-ratio", joined)
             self.assertEqual(report["approved_replacement_path"], "")
+
+
+class PanelComparisonTests(unittest.TestCase):
+    def test_four_panel_end_to_end_requires_visual_decisions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            SegmentAssetsTests.make_four_panel_image(
+                root / "source.png", (246, 246, 242)
+            )
+            source = Image.open(root / "source.png").convert("RGB")
+            render = source.resize((1200, 900), Image.Resampling.NEAREST)
+            render.save(root / "render.png")
+
+            segmented = run_script(
+                SEGMENT_ASSETS,
+                "--root",
+                str(root),
+                "--image",
+                "source.png",
+                "--output-dir",
+                "segmentation",
+                "--expected-count",
+                "4",
+            )
+            self.assertEqual(segmented.returncode, 0, segmented.stdout + segmented.stderr)
+
+            pending = run_script(
+                COMPARE_PANELS,
+                "--root",
+                str(root),
+                "--source",
+                "source.png",
+                "--render",
+                "render.png",
+                "--manifest",
+                "segmentation/asset_manifest.csv",
+                "--output-dir",
+                "comparison-pending",
+                "--expected-count",
+                "4",
+            )
+            self.assertNotEqual(pending.returncode, 0)
+            pending_report = json.loads(
+                (root / "comparison-pending" / "comparison_report.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(pending_report["status"], "needs-review")
+            self.assertEqual(pending_report["panel_count"], 4)
+            self.assertTrue(
+                (root / "comparison-pending" / "comparisons" / "contact-sheet.png").is_file()
+            )
+            self.assertTrue(
+                all(
+                    (root / panel["comparison_path"]).is_file()
+                    for panel in pending_report["panels"]
+                )
+            )
+
+            decisions = {
+                f"panel-{index}": {
+                    "status": "approved",
+                    "note": "Panel meaning and layout match the frozen source.",
+                }
+                for index in range(1, 5)
+            }
+            (root / "decisions.json").write_text(
+                json.dumps(decisions), encoding="utf-8"
+            )
+            approved = run_script(
+                COMPARE_PANELS,
+                "--root",
+                str(root),
+                "--source",
+                "source.png",
+                "--render",
+                "render.png",
+                "--manifest",
+                "segmentation/asset_manifest.csv",
+                "--output-dir",
+                "comparison-approved",
+                "--review-decisions",
+                "decisions.json",
+                "--expected-count",
+                "4",
+            )
+            self.assertEqual(approved.returncode, 0, approved.stdout + approved.stderr)
+            approved_report = json.loads(
+                (root / "comparison-approved" / "comparison_report.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(approved_report["status"], "pass")
+            self.assertTrue(
+                all(panel["status"] == "pass" for panel in approved_report["panels"])
+            )
 
 
 if __name__ == "__main__":
