@@ -14,6 +14,7 @@ INCLUDE = (
     Path(".agents"),
     Path("plugins"),
     Path("README.md"),
+    Path("README_EN.md"),
     Path("CONTRIBUTING.md"),
     Path("LICENSE"),
 )

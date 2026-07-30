@@ -140,6 +140,15 @@ def validate(root: Path, expected_version: str | None) -> None:
     if not (root / "LICENSE").is_file():
         fail("Missing repository LICENSE")
 
+    readme_zh = root / "README.md"
+    readme_en = root / "README_EN.md"
+    if not readme_zh.is_file() or not readme_en.is_file():
+        fail("Both README.md and README_EN.md are required")
+    if 'href="./README_EN.md"' not in readme_zh.read_text(encoding="utf-8"):
+        fail("README.md must link to README_EN.md")
+    if 'href="./README.md"' not in readme_en.read_text(encoding="utf-8"):
+        fail("README_EN.md must link to README.md")
+
     entries = marketplace.get("plugins")
     if not isinstance(entries, list) or len(entries) != 1:
         fail("Marketplace must contain exactly one plugin entry")
