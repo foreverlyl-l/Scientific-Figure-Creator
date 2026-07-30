@@ -23,6 +23,7 @@ SCRIPT_DIR = (
 DRAFT_GATE = SCRIPT_DIR / "draft_gate.py"
 SEGMENT_ASSETS = SCRIPT_DIR / "segment_assets.py"
 VALIDATE_RECONSTRUCTION = SCRIPT_DIR / "validate_reconstruction_plan.py"
+AUDIT_ENHANCED = SCRIPT_DIR / "audit_enhanced_assets.py"
 
 
 def run_script(script: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -287,6 +288,122 @@ class ReconstructionPlanTests(unittest.TestCase):
             )
             self.assertNotEqual(invalid.returncode, 0)
             self.assertIn("forbidden", invalid.stdout)
+
+
+class EnhancedAssetAuditTests(unittest.TestCase):
+    @staticmethod
+    def make_original(path: Path) -> Image.Image:
+        image = Image.new("RGB", (100, 100), "white")
+        ImageDraw.Draw(image).rounded_rectangle(
+            (25, 20, 75, 80), radius=8, fill="#245B78"
+        )
+        image.save(path)
+        return image
+
+    def test_pass_requires_agent_visual_approval_and_preserves_original(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            original = self.make_original(root / "original.png")
+            original.resize((200, 200), Image.Resampling.NEAREST).save(
+                root / "enhanced.png"
+            )
+
+            pending = run_script(
+                AUDIT_ENHANCED,
+                "--root",
+                str(root),
+                "--asset-id",
+                "device-1",
+                "--original",
+                "original.png",
+                "--enhanced",
+                "enhanced.png",
+                "--output-dir",
+                "pending",
+                "--asset-kind",
+                "explanatory-illustration",
+                "--method",
+                "deterministic",
+            )
+            self.assertNotEqual(pending.returncode, 0)
+            pending_report = json.loads(
+                (root / "pending" / "enhancement_report.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(pending_report["status"], "needs-review")
+            self.assertFalse(pending_report["replacement_policy"]["auto_reinsert_allowed"])
+
+            approved = run_script(
+                AUDIT_ENHANCED,
+                "--root",
+                str(root),
+                "--asset-id",
+                "device-1",
+                "--original",
+                "original.png",
+                "--enhanced",
+                "enhanced.png",
+                "--output-dir",
+                "approved",
+                "--asset-kind",
+                "explanatory-illustration",
+                "--method",
+                "deterministic",
+                "--visual-review",
+                "approved",
+                "--locked-background",
+                "#FFFFFF",
+            )
+            self.assertEqual(approved.returncode, 0, approved.stdout + approved.stderr)
+            report = json.loads(
+                (root / "approved" / "enhancement_report.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(report["status"], "pass")
+            self.assertTrue(report["replacement_policy"]["auto_reinsert_allowed"])
+            self.assertTrue(
+                (root / report["approved_replacement_path"]).is_file()
+            )
+            self.assertTrue((root / "original.png").is_file())
+
+    def test_rejects_shape_background_aspect_and_evidence_generation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.make_original(root / "original.png")
+            changed = Image.new("RGB", (260, 180), "#D0D0D0")
+            draw = ImageDraw.Draw(changed)
+            draw.ellipse((20, 20, 130, 150), fill="#D62728")
+            draw.rectangle((180, 30, 230, 80), fill="#111111")
+            changed.save(root / "changed.png")
+
+            result = run_script(
+                AUDIT_ENHANCED,
+                "--root",
+                str(root),
+                "--asset-id",
+                "evidence-1",
+                "--original",
+                "original.png",
+                "--enhanced",
+                "changed.png",
+                "--output-dir",
+                "failed",
+                "--asset-kind",
+                "scientific-evidence",
+                "--method",
+                "generative",
+                "--visual-review",
+                "approved",
+                "--locked-background",
+                "#FFFFFF",
+            )
+            self.assertNotEqual(result.returncode, 0)
+            report = json.loads(
+                (root / "failed" / "enhancement_report.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(report["status"], "fail")
+            joined = " ".join(report["failures"])
+            self.assertIn("scientific evidence", joined)
+            self.assertIn("aspect-ratio", joined)
+            self.assertEqual(report["approved_replacement_path"], "")
 
 
 if __name__ == "__main__":

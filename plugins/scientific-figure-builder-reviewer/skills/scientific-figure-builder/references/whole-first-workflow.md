@@ -74,7 +74,7 @@ Record every required label, formula, node, input, output, directed edge, legend
 
 ## 3. Whole-Image Draft and Human Freeze
 
-Before any draft generation or generative enhancement, show the user the image-generation routes that are actually available in the current runtime and ask them to select one. State the relevant provider, cost/privacy implications when known, reference-image support, and batch behavior. Do not set a default choice and do not interpret silence as consent.
+Before any draft generation or generative enhancement, show the user the image-generation routes that are actually available in the current runtime and ask them to select one. State the relevant provider, cost/privacy implications when known, reference-image support, and batch behavior. Do not set a default choice and do not interpret silence as consent. Record whether the user's selection covers only the draft, only enhancement, or the entire run; ask again when the recorded scope does not cover the next generation step.
 
 Use native `imagegen` only after the user selects it. Use `baoyu-image-gen` only when the user explicitly names that skill or explicitly selects it after the provider and batch implications are presented. It is not a generic fallback. If the selected backend fails, report the failure and ask before switching to another backend.
 
@@ -178,6 +178,24 @@ Lock object count, silhouette, pose, perspective, composition, palette, outline,
 Prefer deterministic resizing first. Use reference-guided generation only when resizing is insufficient, the asset is not scientific evidence, and the user has explicitly selected the generation backend for that enhancement run.
 
 Run `scripts/audit_enhanced_assets.py`. Reinsert only a `pass` result. Preserve the original on `needs-review` or `fail`; ask the user only when the workflow cannot resolve the failure safely.
+
+First run the audit with `--visual-review pending`. Inspect the original and enhanced assets at full size, then rerun with `--visual-review approved` or `--visual-review rejected` and a short note. The script creates an approved copy and permits automatic reinsertion only when the metrics have no failures or warnings and the Agent review is approved.
+
+```text
+python scripts/audit_enhanced_assets.py \
+  --root <task-output-root> \
+  --asset-id <stable-asset-id> \
+  --original <relative-original-path> \
+  --enhanced <relative-enhanced-path> \
+  --output-dir <relative-audit-directory> \
+  --asset-kind explanatory-illustration \
+  --method deterministic \
+  --visual-review approved \
+  --visual-review-note "<what was inspected>" \
+  --locked-background "#F7F7F5"
+```
+
+Use `--asset-kind scientific-evidence` for measured or experimental imagery. The script rejects a generative method for that class.
 
 For flat backgrounds, normalize the enhanced border to the exact locked RGB or make the background transparent before insertion.
 
