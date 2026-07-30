@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Figure Reviewer"
+  short_description: "Final audit for rebuilt scientific figures."
+  default_prompt: "Use $scientific-figure-reviewer to audit this rebuilt figure against its reference block by block and as a whole."
+policy:
+  allow_implicit_invocation: false

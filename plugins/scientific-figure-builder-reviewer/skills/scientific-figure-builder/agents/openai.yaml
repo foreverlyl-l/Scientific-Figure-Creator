@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scientific Figure Builder"
+  short_description: "Build editable scientific figures from references."
+  default_prompt: "Use $scientific-figure-builder to rebuild a reference figure in PowerPoint with block-by-block semantic review."

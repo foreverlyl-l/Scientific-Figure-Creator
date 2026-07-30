@@ -1,0 +1,20 @@
+{
+  "name": "scientific-figure-skills",
+  "interface": {
+    "displayName": "Scientific Figure Skills"
+  },
+  "plugins": [
+    {
+      "name": "scientific-figure-builder-reviewer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/scientific-figure-builder-reviewer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
