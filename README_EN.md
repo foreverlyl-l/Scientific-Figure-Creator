@@ -2,7 +2,7 @@
 
 # Scientific Figure Builder & Reviewer
 
-PowerPoint-based scientific figure reconstruction and independent review skills
+From scientific-figure drafts to editable, reviewable PowerPoint deliverables
 
 <p>
   <strong>English</strong> |
@@ -11,45 +11,46 @@ PowerPoint-based scientific figure reconstruction and independent review skills
 
 </div>
 
-Scientific Figure Builder & Reviewer is a pair of Codex skills for turning an existing scientific figure draft or reference image into a structured, editable, and reviewable PowerPoint figure.
+Scientific Figure Builder & Reviewer is a pair of open-source Codex skills for turning a written brief, rough sketch, whole-image draft, or reference figure into a structured, editable, and reviewable PowerPoint scientific figure.
 
 The repository contains two complementary skills:
 
-- `scientific-figure-builder` for reconstruction and construction-time review;
-- `scientific-figure-reviewer` for an explicit, read-only final audit.
+- `scientific-figure-builder` handles drafts, reconstruction, asset processing, and construction-time review;
+- `scientific-figure-reviewer` performs an explicit, read-only, independent final audit.
 
 ## What it can do
 
-- **Understand an existing draft:** Identify panels, headings, labels, formulas, legends, inputs, outputs, arrows, feedback paths, repeated objects, and reading order as parts of a scientific communication artifact.
-- **Build a traceable structure:** Divide the reference into semantic blocks with stable IDs and parent-child relationships, then maintain an object inventory so missing, duplicated, substituted, and unfinished content remains visible.
-- **Reconstruct in PowerPoint:** Rebuild text, formulas, rectangles, circles, tables, arrows, connectors, simple axes, and colored cells as editable native PowerPoint objects.
-- **Handle complex content honestly:** Keep complex plots, scientific imagery, equipment renderings, textured icons, and custom geometry as traceable atomic crops or explicitly defer them instead of using misleading generic approximations.
-- **Manage and reuse assets:** Record stable IDs, source regions, parent blocks, semantic roles, aliases, and placements. Semantically equivalent repeated objects can reuse one canonical asset.
-- **Review during construction:** Compare every block with the matching reference region before acceptance, checking object completeness, arrow direction, relationships, text, formulas, grouping, ordering, and legends.
-- **Perform an independent final audit:** When explicitly invoked, `scientific-figure-reviewer` reviews every block and then the complete figure, separating Level 1 semantic issues from Level 2 visual-detail issues.
-- **Distinguish source errors:** Logical or semantic errors already present in the reference are reported as `source-error` rather than being attributed to the reconstruction.
+- **Generate a whole-image first draft:** Build a semantic specification for panels, nodes, text, formulas, inputs, outputs, directed connections, and reading order, then generate one complete draft through an image backend selected by the user. The skill does not choose a provider by default or silently switch backends after a failure.
+- **Freeze only after human confirmation:** Review block semantics first and whole-figure logic second. A SHA-256 lock record is created only after the user explicitly confirms the draft in chat; changing the draft or semantic specification invalidates the approval.
+- **Detect and crop boundaries automatically:** Python and Pillow snap human-provided rough regions to detected content using background distance, projection gaps, and foreground regions. The workflow emits cropped PNGs, `asset_manifest.csv`, boundary reports, and a numbered overlay, and fails closed on empty regions, edge contact, overlap, low confidence, or an explicit panel-count mismatch.
+- **Reconstruct an editable PowerPoint figure:** JavaScript `@oai/artifact-tool` builds the deck. Text, formulas, borders, color fields, simple shapes, arrows, and connectors remain native objects; equipment renders, smoke, and complex curves may remain traceable PNG assets.
+- **Enhance complex explanatory illustrations under controls:** Deterministic enlargement or user-selected generative enhancement can be checked for aspect ratio, silhouette, foreground coverage, background, palette, and added objects. A replacement copy is produced only after both automated metrics and Agent visual review pass, while the original remains untouched.
+- **Validate matching panels:** Redetect corresponding regions in the frozen draft and PowerPoint render, then produce panel-by-panel comparisons, a contact sheet, and a machine-readable report. Every panel still requires visual and semantic approval.
+- **Run an independent final audit:** `scientific-figure-reviewer` runs only when the user explicitly invokes it. The Builder never triggers it automatically, and the reviewer does not modify the deck.
 
-The workflow can produce an editable PPTX, an atomic asset directory, a semantic block map, an object inventory, an asset manifest, a construction report, and an independent final-review report.
+## Deliverables
 
-## What it cannot do
+- An editable PPTX;
+- the frozen draft, `figure_spec.json`, and `draft_lock.json`;
+- atomic crops, an asset manifest, and boundary-detection evidence;
+- enhancement audit and safe replacement records;
+- slide renders, panel comparison images, and a construction report;
+- an independent final-review report when explicitly requested.
 
-- It does not include its own PowerPoint drawing backend. Construction and rendering depend on the PowerPoint capabilities available in the Codex runtime.
-- It currently starts from an existing draft or reference image. Automatic first-draft illustration and automatic image upscaling are not yet included.
-- It does not guarantee pixel-perfect reproduction. Low-resolution references and highly complex visual objects may remain traceable image assets or be explicitly deferred. Editable `.drawio` output is not currently supported.
+## Main limitations
+
+- Draft generation and generative enhancement depend on a backend that is actually available in the current Codex environment and explicitly selected by the user. Generated results still require semantic review and human confirmation.
+- Scientific evidence such as microscopy, measured plots, and medical imagery must not be generatively rewritten; only an explicit non-generative method may be used.
+- The current workflow focuses on PowerPoint, does not promise pixel-perfect reproduction, and does not yet deliver editable `.drawio` files.
 
 ## Where it works well
 
-- Paper figures, model diagrams, workflows, process diagrams, architecture figures, and block diagrams;
-- projects with a reasonably clear visual draft, panels, labels, arrows, formulas, and reading order;
-- figures combining editable geometric structures with a limited number of complex image elements;
-- tasks requiring an editable PowerPoint deliverable rather than a single flattened image;
-- projects where semantic correctness, traceable assets, intermediate review, and human or strong-model judgment matter.
+- Deep-learning and non-visual-domain model figures, data flows, system architectures, mechanisms, and method diagrams;
+- figures whose scientific meaning is carried mainly by text, modules, formulas, and connections, with illustrations serving as explanatory support;
+- projects that need a consistent background and illustration style while preserving editable text, geometry, and connectors;
+- workflows that allow strong-model and human judgment during semantic review, draft approval, and final acceptance.
 
-## Roadmap
-
-- Automated high-resolution image processing with source preservation and special protection for scientific evidence images;
-- first-draft scientific illustration from a written brief, structured specification, or rough sketch;
-- editable draw.io reconstruction and delivery.
+Future work will continue improving first-draft and controlled-enhancement stability and add editable draw.io reconstruction and delivery.
 
 ## License scope
 

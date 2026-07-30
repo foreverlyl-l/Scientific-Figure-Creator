@@ -16,10 +16,9 @@ Before opening a change, validate both skills and the plugin:
 
 ```powershell
 python -m pip install PyYAML==6.0.2
+python -m unittest discover -s tests -v
 python scripts/validate_package.py
 ```
-
-The GitHub workflow runs the same repository-level validation automatically.
 
 Also confirm that:
 
