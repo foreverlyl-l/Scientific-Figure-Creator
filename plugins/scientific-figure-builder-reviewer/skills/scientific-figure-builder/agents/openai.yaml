@@ -1,4 +1,4 @@
 interface:
   display_name: "Scientific Figure Builder"
-  short_description: "Build editable scientific figures from drafts."
-  default_prompt: "Use $scientific-figure-builder to create or rebuild a scientific figure in PowerPoint with human-approved draft freezing and semantic review."
+  short_description: "Recreate reference diagrams with editable PPT shapes."
+  default_prompt: "Use $scientific-figure-builder to recreate this reference diagram with editable PowerPoint shapes and block-by-block semantic review."

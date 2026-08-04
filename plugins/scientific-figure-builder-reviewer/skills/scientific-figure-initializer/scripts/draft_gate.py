@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create and verify a human-approved whole-figure draft lock."""
+"""Create and verify an initializer's human-approved whole-figure draft lock."""
 
 from __future__ import annotations
 

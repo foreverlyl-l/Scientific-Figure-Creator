@@ -1,8 +1,8 @@
 <div align="center">
 
-# Scientific Figure Builder & Reviewer
+# Scientific Figure Initializer, Builder & Reviewer
 
-From scientific-figure drafts to editable, reviewable PowerPoint deliverables
+Scientific-figure initialization, PowerPoint reconstruction, and independent review
 
 <p>
   <strong>English</strong> |
@@ -11,21 +11,20 @@ From scientific-figure drafts to editable, reviewable PowerPoint deliverables
 
 </div>
 
-Scientific Figure Builder & Reviewer is a pair of open-source Codex skills for turning a written brief, rough sketch, whole-image draft, or reference figure into a structured, editable, and reviewable PowerPoint scientific figure.
+Scientific Figure Initializer, Builder & Reviewer is a set of open-source Codex skills for initializing scientific-figure workflows, reconstructing references as editable PowerPoint figures, and running an independent final audit.
 
-The repository contains two complementary skills:
+The repository contains three consistently named skills:
 
-- `scientific-figure-builder` handles drafts, reconstruction, asset processing, and construction-time review;
+- `scientific-figure-initializer` retains the previous repository Builder workflow for whole-image drafts, human freezing, asset processing, reconstruction coordination, and construction-time acceptance;
+- `scientific-figure-builder`, renamed from `ppt-shape-recreate-review`, focuses on block-by-block reconstruction with editable PowerPoint-native objects;
 - `scientific-figure-reviewer` performs an explicit, read-only, independent final audit.
 
 ## What it can do
 
-- **Generate a whole-image first draft:** Build a semantic specification for panels, nodes, text, formulas, inputs, outputs, directed connections, and reading order, then generate one complete draft through an image backend selected by the user. The skill does not choose a provider by default or silently switch backends after a failure.
-- **Freeze only after human confirmation:** Review block semantics first and whole-figure logic second. A SHA-256 lock record is created only after the user explicitly confirms the draft in chat; changing the draft or semantic specification invalidates the approval.
-- **Detect and crop boundaries automatically:** Python and Pillow snap human-provided rough regions to detected content using background distance, projection gaps, and foreground regions. The workflow emits cropped PNGs, `asset_manifest.csv`, boundary reports, and a numbered overlay, and fails closed on empty regions, edge contact, overlap, low confidence, or an explicit panel-count mismatch.
-- **Reconstruct an editable PowerPoint figure:** JavaScript `@oai/artifact-tool` builds the deck. Text, formulas, borders, color fields, simple shapes, arrows, and connectors remain native objects; equipment renders, smoke, and complex curves may remain traceable PNG assets.
-- **Enhance complex explanatory illustrations under controls:** Deterministic enlargement or user-selected generative enhancement can be checked for aspect ratio, silhouette, foreground coverage, background, palette, and added objects. A replacement copy is produced only after both automated metrics and Agent visual review pass, while the original remains untouched.
-- **Validate matching panels:** Redetect corresponding regions in the frozen draft and PowerPoint render, then produce panel-by-panel comparisons, a contact sheet, and a machine-readable report. Every panel still requires visual and semantic approval.
+- **Initializer — whole-image draft and freeze:** Build a semantic specification for panels, nodes, text, formulas, inputs, outputs, directed connections, and reading order, then generate one complete draft through a backend explicitly selected by the user. Create a SHA-256 lock only after block, whole-figure, and human approval.
+- **Initializer — complete workflow coordination:** Retain the previous Builder's automatic boundary detection, crop manifests, Artifact Tool reconstruction contract, controlled illustration enhancement, and panel-by-panel comparison capabilities without splitting or removing them.
+- **Builder — PowerPoint shape reconstruction:** Segment the reference semantically and into atomic assets, maintain an object inventory, strictly separate simple native shapes from complex illustrations, and require block and whole-figure review before acceptance.
+- **Builder — editable objects first:** Keep text, formulas, borders, color fields, simple geometry, arrows, and connectors as native PowerPoint objects. Use traceable crops for complex equipment, texture, and dense curves rather than misleading generic approximations.
 - **Run an independent final audit:** `scientific-figure-reviewer` runs only when the user explicitly invokes it. The Builder never triggers it automatically, and the reviewer does not modify the deck.
 
 ## Deliverables

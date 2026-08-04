@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Redetect, align, and compare source and rendered scientific-figure panels."""
+"""Redetect, align, and compare initializer-managed source and rendered panels."""
 
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 {
   "name": "scientific-figure-builder-reviewer",
-  "version": "0.2.0",
-  "description": "Build editable scientific figures from human-approved whole-image drafts or references and perform fail-closed final reviews.",
+  "version": "0.3.0",
+  "description": "Initialize scientific-figure workflows, rebuild references as editable PowerPoint objects, and perform fail-closed final reviews.",
   "author": {
     "name": "Community Contributors"
   },
@@ -17,9 +17,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Scientific Figure Builder & Reviewer",
-    "shortDescription": "Whole-first scientific figure building and audit",
-    "longDescription": "A two-skill toolkit for human-approved whole-image drafts, automatic asset segmentation, staged reconstruction as editable PowerPoint objects, controlled raster enhancement, and an explicit read-only final audit.",
+    "displayName": "Scientific Figure Initializer, Builder & Reviewer",
+    "shortDescription": "Initialize, rebuild, and audit scientific figures",
+    "longDescription": "A three-skill toolkit with whole-image workflow initialization, editable PowerPoint reconstruction from references, and an explicit read-only final audit.",
     "developerName": "Community Contributors",
     "category": "Productivity",
     "capabilities": [
@@ -31,7 +31,8 @@
       "Final semantic audit"
     ],
     "defaultPrompt": [
-      "Use $scientific-figure-builder to create or rebuild this figure in PowerPoint.",
+      "Use $scientific-figure-initializer to initialize this figure workflow from my brief or draft.",
+      "Use $scientific-figure-builder to rebuild this reference with editable PowerPoint shapes.",
       "Use $scientific-figure-reviewer to audit this PPT against its reference."
     ],
     "brandColor": "#163B66"

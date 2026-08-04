@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scientific Figure Initializer"
+  short_description: "Initialize scientific figures from briefs or drafts."
+  default_prompt: "Use $scientific-figure-initializer to initialize a scientific figure with whole-draft generation, human-approved freezing, reconstruction, and semantic review."

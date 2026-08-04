@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the native-object and raster boundary for a reconstruction plan."""
+"""Validate the initializer's native-object and raster reconstruction boundary."""
 
 from __future__ import annotations
 

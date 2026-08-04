@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Detect content boundaries, crop scientific-figure assets, and write manifests."""
+"""Detect initializer-managed content boundaries, crop assets, and write manifests."""
 
 from __future__ import annotations
 

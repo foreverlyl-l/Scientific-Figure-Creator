@@ -1,4 +1,4 @@
-# Artifact Tool Reconstruction Contract
+# Scientific Figure Initializer: Artifact Tool Reconstruction Contract
 
 ## Purpose
 

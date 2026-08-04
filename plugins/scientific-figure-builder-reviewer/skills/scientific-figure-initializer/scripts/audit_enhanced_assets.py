@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit an enhanced raster asset before it may replace the original in PowerPoint."""
+"""Audit an initializer-managed raster asset before PowerPoint replacement."""
 
 from __future__ import annotations
 

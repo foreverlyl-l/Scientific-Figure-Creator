@@ -164,7 +164,11 @@ def validate(root: Path, expected_version: str | None) -> None:
 
     skills_dir = plugin_dir / "skills"
     found = sorted(validate_skill(path) for path in skills_dir.iterdir() if path.is_dir())
-    expected = ["scientific-figure-builder", "scientific-figure-reviewer"]
+    expected = [
+        "scientific-figure-builder",
+        "scientific-figure-initializer",
+        "scientific-figure-reviewer",
+    ]
     if found != expected:
         fail(f"Expected skills {expected}, found {found}")
 

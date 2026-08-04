@@ -1,8 +1,8 @@
 <div align="center">
 
-# Scientific Figure Builder & Reviewer
+# Scientific Figure Initializer, Builder & Reviewer
 
-从科研图初稿到可编辑 PowerPoint 终稿的构建与独立审核技能
+科研图初始化、PowerPoint 重建与独立审核技能
 
 <p>
   <a href="./README_EN.md">English</a> |
@@ -11,21 +11,20 @@
 
 </div>
 
-Scientific Figure Builder & Reviewer 是一组面向 Codex 的开源 skill，用于把文字需求、粗略草图、整图初稿或参考图逐步转化为结构清晰、可编辑、可审核的 PowerPoint 科研图。
+Scientific Figure Initializer, Builder & Reviewer 是一组面向 Codex 的开源 skill，用于初始化科研图工作流、把参考图重建为可编辑 PowerPoint，并执行独立终审。
 
-仓库包含两个配套 skill：
+仓库包含三个并列且命名一致的 skill：
 
-- `scientific-figure-builder`：负责初稿、重建、素材处理和施工期审核；
+- `scientific-figure-initializer`：原仓库 Builder 的完整工作流，负责整图初稿、人工冻结、素材处理、重建协调和施工期验收；
+- `scientific-figure-builder`：由 `ppt-shape-recreate-review` 更名而来，专门把参考图分块重建为可编辑 PowerPoint 原生对象；
 - `scientific-figure-reviewer`：负责用户显式调用、只读且独立的最终审核。
 
 ## 现在能做什么
 
-- **整图生成初稿：** 先建立包含面板、节点、文字、公式、输入输出、连线方向和阅读顺序的语义规格，再通过用户选择的图像生成后端一次性生成完整初稿，保持底色、布局和画风连续。Skill 不会默认选择供应商，也不会在失败后静默切换后端。
-- **人工确认后冻结：** 先检查每个分块的语义，再检查整图逻辑。只有用户在对话中明确确认后才生成带 SHA-256 的冻结记录；初稿或语义规格发生变化时，旧确认自动失效。
-- **自动检测和裁剪边界：** Python + Pillow 根据背景色差、投影间隔和前景区域把人工提供的粗略范围吸附到实际内容边界，生成裁剪 PNG、`asset_manifest.csv`、边界报告和编号覆盖图。空区域、贴边、重叠、低置信度或面板数量不符时停止流程。
-- **重建可编辑 PowerPoint：** JavaScript `@oai/artifact-tool` 负责 PPT 构建。文字、公式、边框、色块、简单图形、箭头和连接线保持为原生对象；设备渲染、烟雾和复杂曲线等内容才使用可追踪 PNG。
-- **受控处理复杂图例：** 可对解释性图例进行确定性放大或经用户选择后使用生成式增强，同时检查比例、轮廓、前景覆盖、背景、色板和额外对象。机器指标和 Agent 视觉审核都通过后才生成可回填副本，原资产不会被覆盖。
-- **逐面板对照验收：** 对冻结初稿与 PPT 渲染图分别重新检测面板边界，输出逐面板并排图、总览图和机器可读报告；每个面板仍需完成视觉和语义确认。
+- **Initializer — 整图初稿与冻结：** 建立面板、节点、文字、公式、输入输出、连线方向和阅读顺序的语义规格，再通过用户明确选择的图像后端生成完整初稿。完成分块及整图语义检查后，只有用户明确确认才生成带 SHA-256 的冻结记录。
+- **Initializer — 完整工作流协调：** 保留原 Builder 的自动边界检测、裁剪清单、Artifact Tool 重建协议、受控图例高清化和逐面板并排验收能力，不对原功能进行拆分或删减。
+- **Builder — PowerPoint 形状重建：** 对参考图进行语义分块和原子素材拆分，建立 object inventory，严格区分简单原生图形与复杂图例，并以分块审核和整图审核作为完成门禁。
+- **Builder — 可编辑对象优先：** 文字、公式、边框、色块、简单图形、箭头和连接线使用 PowerPoint 原生对象；复杂设备、纹理和密集曲线可以使用可追踪裁剪，禁止用低质量通用形状冒充。
 - **独立最终审核：** 只有用户明确调用 `scientific-figure-reviewer` 时才执行只读终审。它不会由 Builder 自动触发，也不会自动修改 PPT。
 
 ## 可交付内容

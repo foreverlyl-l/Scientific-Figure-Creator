@@ -1,4 +1,4 @@
-# Whole-First Scientific Figure Workflow
+# Scientific Figure Initializer: Whole-First Workflow
 
 ## Contents
 

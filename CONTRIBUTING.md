@@ -12,7 +12,7 @@ Contributions are welcome.
 
 ## Validation
 
-Before opening a change, validate both skills and the plugin:
+Before opening a change, validate all three skills and the plugin:
 
 ```powershell
 python -m pip install PyYAML==6.0.2
@@ -22,6 +22,7 @@ python scripts/validate_package.py
 
 Also confirm that:
 
+- `scientific-figure-initializer`, `scientific-figure-builder`, and `scientific-figure-reviewer` retain distinct invocation names;
 - every relative reference in a `SKILL.md` resolves;
 - `agents/openai.yaml` prompts use the correct `$skill-name`;
 - no absolute local paths or private data are present;

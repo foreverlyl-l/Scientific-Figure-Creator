@@ -17,7 +17,7 @@ SCRIPT_DIR = (
     / "plugins"
     / "scientific-figure-builder-reviewer"
     / "skills"
-    / "scientific-figure-builder"
+    / "scientific-figure-initializer"
     / "scripts"
 )
 DRAFT_GATE = SCRIPT_DIR / "draft_gate.py"
@@ -25,6 +25,7 @@ SEGMENT_ASSETS = SCRIPT_DIR / "segment_assets.py"
 VALIDATE_RECONSTRUCTION = SCRIPT_DIR / "validate_reconstruction_plan.py"
 AUDIT_ENHANCED = SCRIPT_DIR / "audit_enhanced_assets.py"
 COMPARE_PANELS = SCRIPT_DIR / "compare_panels.py"
+SKILLS_DIR = ROOT / "plugins" / "scientific-figure-builder-reviewer" / "skills"
 
 
 def run_script(script: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -34,6 +35,40 @@ def run_script(script: Path, *arguments: str) -> subprocess.CompletedProcess[str
         capture_output=True,
         text=True,
     )
+
+
+class SkillRoleTests(unittest.TestCase):
+    def test_three_role_names_and_invocations_are_distinct(self) -> None:
+        expected = {
+            "scientific-figure-initializer",
+            "scientific-figure-builder",
+            "scientific-figure-reviewer",
+        }
+        found = {path.name for path in SKILLS_DIR.iterdir() if path.is_dir()}
+        self.assertEqual(found, expected)
+
+        for name in expected:
+            skill_text = (SKILLS_DIR / name / "SKILL.md").read_text(encoding="utf-8")
+            agent_text = (SKILLS_DIR / name / "agents" / "openai.yaml").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn(f"name: {name}", skill_text)
+            self.assertIn(f"${name}", agent_text)
+
+        initializer = SKILLS_DIR / "scientific-figure-initializer"
+        self.assertTrue((initializer / "scripts" / "draft_gate.py").is_file())
+        self.assertTrue((initializer / "references" / "whole-first-workflow.md").is_file())
+
+        builder_text = (SKILLS_DIR / "scientific-figure-builder" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("staged reconstruction", builder_text)
+        self.assertNotIn("name: ppt-shape-recreate-review", builder_text)
+
+        reviewer_agent = (
+            SKILLS_DIR / "scientific-figure-reviewer" / "agents" / "openai.yaml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("allow_implicit_invocation: false", reviewer_agent)
 
 
 class DraftGateTests(unittest.TestCase):
